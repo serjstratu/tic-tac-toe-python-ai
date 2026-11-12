@@ -1,5 +1,5 @@
-
 import pygame
+import random
 
 pygame.init()
 
@@ -17,9 +17,9 @@ WHITE = (255, 255, 255)
 BUTTON_BACKGROUND = (15, 15, 20)
 
 # Board settings
-BOARD_SIZE = 400
+BOARD_SIZE = 360
 BOARD_X = (WINDOW_WIDTH - BOARD_SIZE) // 2
-BOARD_Y = 170
+BOARD_Y = 200
 CELL_SIZE = BOARD_SIZE / 3
 
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -33,6 +33,7 @@ restart_font = pygame.font.Font(None, 24)
 score_font = pygame.font.Font(None, 24)
 
 selected_player = None
+current_player = None
 
 board = [
     [None, None, None],
@@ -51,7 +52,7 @@ round_over = False
 x_button = pygame.Rect(190, 75, 90, 50)
 o_button = pygame.Rect(320, 75, 90, 50)
 
-restart_button = pygame.Rect(235, 120, 130, 36)
+restart_button = pygame.Rect(235, 135, 130, 30)
 
 board_rect = pygame.Rect(
     BOARD_X,
@@ -272,7 +273,7 @@ def draw_scoreboard():
     )
 
     text_rect = text_surface.get_rect(
-        center=(WINDOW_WIDTH // 2, 155)
+        center=(WINDOW_WIDTH // 2, 180)
     )
 
     screen.blit(text_surface, text_rect)
@@ -312,13 +313,47 @@ def is_draw():
     )
 
 def reset_board():
-    global round_over
+    global round_over, current_player
 
     for row in board:
         row[:] = [None, None, None]
 
+    current_player = selected_player
     round_over = False
 
+def switch_player():
+    global current_player
+
+    current_player = "O" if current_player == "X" else "X"
+
+def make_random_move():
+    global round_over
+
+    available_cells = [
+        (row, col)
+        for row in range(3)
+        for col in range(3)
+        if board[row][col] is None
+    ]
+
+    if not available_cells:
+        return
+
+    row, col = random.choice(available_cells)
+
+    computer_player = "O" if selected_player == "X" else "X"
+
+    board[row][col] = computer_player
+
+    winner = check_winner()
+
+    if winner:
+        scores[winner] += 1
+        round_over = True
+
+    elif is_draw():
+        scores["draws"] += 1
+        round_over = True
 
 def draw_game():
     screen.fill(BLACK)
@@ -353,14 +388,14 @@ def draw_game():
         status_text = f"{winner} WINS!"
     elif is_draw():
         status_text = "IT'S A DRAW!"
-    elif selected_player:
-        status_text = f"You are playing as {selected_player}"
+    elif current_player:
+        status_text = f"{current_player}'s TURN"
     else:
         status_text = "Select X or O to start"
 
     status = status_font.render(status_text, True, WHITE)
     status_rect = status.get_rect(
-        center=(WINDOW_WIDTH // 2, 590)
+        center=(WINDOW_WIDTH // 2, 580)
     )
     screen.blit(status, status_rect)
     pygame.display.flip()
@@ -378,10 +413,16 @@ while running:
                 reset_board()
 
             elif x_button.collidepoint(event.pos):
-                selected_player = "X"
+                if not any(any(cell is not None for cell in row) for row in board):
+                    selected_player = "X"
+                    current_player = "X"
+                    round_over = False
 
             elif o_button.collidepoint(event.pos):
-                selected_player = "O"
+                if not any(any(cell is not None for cell in row) for row in board):
+                    selected_player = "O"
+                    current_player = "O"
+                    round_over = False
 
             elif (
                     selected_player
@@ -394,6 +435,7 @@ while running:
                 row = int((mouse_y - BOARD_Y) // CELL_SIZE)
 
                 if board[row][col] is None:
+
                     board[row][col] = selected_player
 
                     winner = check_winner()
@@ -405,6 +447,9 @@ while running:
                     elif is_draw():
                         scores["draws"] += 1
                         round_over = True
+
+                    else:
+                        make_random_move()
 
     draw_game()
 
