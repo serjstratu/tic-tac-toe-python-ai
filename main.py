@@ -29,6 +29,8 @@ pygame.display.set_caption(WINDOW_TITLE)
 title_font = pygame.font.Font(None, 38)
 button_font = pygame.font.Font(None, 42)
 status_font = pygame.font.Font(None, 28)
+restart_font = pygame.font.Font(None, 24)
+score_font = pygame.font.Font(None, 24)
 
 selected_player = None
 
@@ -38,8 +40,18 @@ board = [
     [None, None, None]
 ]
 
+scores = {
+    "X": 0,
+    "O": 0,
+    "draws": 0
+}
+
+round_over = False
+
 x_button = pygame.Rect(190, 75, 90, 50)
 o_button = pygame.Rect(320, 75, 90, 50)
+
+restart_button = pygame.Rect(235, 120, 130, 36)
 
 board_rect = pygame.Rect(
     BOARD_X,
@@ -73,6 +85,7 @@ def draw_neon_text(surface, text, font, color, center):
         )
 
     surface.blit(text_surface, text_rect)
+
 
 def draw_button(rect, text, color, selected=False):
     pygame.draw.rect(
@@ -124,6 +137,7 @@ def draw_button(rect, text, color, selected=False):
         color,
         rect.center
     )
+
 
 def draw_board():
     for i in range(1, 3):
@@ -222,6 +236,47 @@ def draw_symbols():
             )
 
 
+def draw_restart_button():
+    pygame.draw.rect(
+        screen,
+        BUTTON_BACKGROUND,
+        restart_button,
+        border_radius=8
+    )
+
+    pygame.draw.rect(
+        screen,
+        GRID_COLOR,
+        restart_button,
+        width=2,
+        border_radius=8
+    )
+
+    text = restart_font.render("RESTART", True, WHITE)
+    text_rect = text.get_rect(center=restart_button.center)
+
+    screen.blit(text, text_rect)
+
+
+def draw_scoreboard():
+    score_text = (
+        f"X: {scores['X']}     "
+        f"DRAWS: {scores['draws']}     "
+        f"O: {scores['O']}"
+    )
+
+    text_surface = score_font.render(
+        score_text,
+        True,
+        WHITE
+    )
+
+    text_rect = text_surface.get_rect(
+        center=(WINDOW_WIDTH // 2, 155)
+    )
+
+    screen.blit(text_surface, text_rect)
+
 def check_winner():
     for row in board:
         if row[0] is not None and row[0] == row[1] == row[2]:
@@ -256,6 +311,14 @@ def is_draw():
         for cell in row
     )
 
+def reset_board():
+    global round_over
+
+    for row in board:
+        row[:] = [None, None, None]
+
+    round_over = False
+
 
 def draw_game():
     screen.fill(BLACK)
@@ -277,6 +340,9 @@ def draw_game():
         NEON_CITRUS,
         selected_player == "O"
     )
+
+    draw_restart_button()
+    draw_scoreboard()
 
     draw_board()
     draw_symbols()
@@ -306,21 +372,39 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    if event.type == pygame.MOUSEBUTTONDOWN:
-        if x_button.collidepoint(event.pos):
-            selected_player = "X"
+        if event.type == pygame.MOUSEBUTTONDOWN:
 
-        elif o_button.collidepoint(event.pos):
-            selected_player = "O"
+            if restart_button.collidepoint(event.pos):
+                reset_board()
 
-        elif (selected_player and not check_winner() and not is_draw() and board_rect.collidepoint(event.pos)):
-            mouse_x, mouse_y = event.pos
+            elif x_button.collidepoint(event.pos):
+                selected_player = "X"
 
-            col = int((mouse_x - BOARD_X) // CELL_SIZE)
-            row = int((mouse_y - BOARD_Y) // CELL_SIZE)
+            elif o_button.collidepoint(event.pos):
+                selected_player = "O"
 
-            if board[row][col] is None:
-                board[row][col] = selected_player
+            elif (
+                    selected_player
+                    and not round_over
+                    and board_rect.collidepoint(event.pos)
+            ):
+                mouse_x, mouse_y = event.pos
+
+                col = int((mouse_x - BOARD_X) // CELL_SIZE)
+                row = int((mouse_y - BOARD_Y) // CELL_SIZE)
+
+                if board[row][col] is None:
+                    board[row][col] = selected_player
+
+                    winner = check_winner()
+
+                    if winner:
+                        scores[winner] += 1
+                        round_over = True
+
+                    elif is_draw():
+                        scores["draws"] += 1
+                        round_over = True
 
     draw_game()
 
