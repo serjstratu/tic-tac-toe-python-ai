@@ -36,16 +36,85 @@ x_button = pygame.Rect(190, 75, 90, 50)
 o_button = pygame.Rect(320, 75, 90, 50)
 
 
+
+def draw_neon_text(surface, text, font, color, center):
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect(center=center)
+
+    glow_surface = pygame.Surface(
+        text_surface.get_size(),
+        pygame.SRCALPHA
+    )
+
+    glow_surface.blit(text_surface, (0, 0))
+
+    for offset in [
+        (-3, 0), (3, 0),
+        (0, -3), (0, 3),
+        (-2, -2), (2, 2),
+        (-2, 2), (2, -2)
+    ]:
+        glow_layer = glow_surface.copy()
+        glow_layer.set_alpha(45)
+        surface.blit(
+            glow_layer,
+            (text_rect.x + offset[0], text_rect.y + offset[1])
+        )
+
+    surface.blit(text_surface, text_rect)
+
+
+
 def draw_button(rect, text, color, selected=False):
-    pygame.draw.rect(screen, BUTTON_BACKGROUND, rect, border_radius=8)
+    pygame.draw.rect(
+        screen,
+        BUTTON_BACKGROUND,
+        rect,
+        border_radius=8
+    )
+
+    if selected:
+        glow_surface = pygame.Surface(
+            (rect.width + 24, rect.height + 24),
+            pygame.SRCALPHA
+        )
+
+        glow_rect = pygame.Rect(
+            12, 12,
+            rect.width, rect.height
+        )
+
+        for width, alpha in [(10, 25), (6, 45), (3, 80)]:
+            pygame.draw.rect(
+                glow_surface,
+                (*color, alpha),
+                glow_rect,
+                width=width,
+                border_radius=8
+            )
+
+        screen.blit(
+            glow_surface,
+            (rect.x - 12, rect.y - 12)
+        )
 
     border_color = color if selected else GRID_COLOR
-    pygame.draw.rect(screen, border_color, rect, width=2, border_radius=8)
 
-    text_surface = button_font.render(text, True, color)
-    text_rect = text_surface.get_rect(center=rect.center)
+    pygame.draw.rect(
+        screen,
+        border_color,
+        rect,
+        width=2,
+        border_radius=8
+    )
 
-    screen.blit(text_surface, text_rect)
+    draw_neon_text(
+        screen,
+        text,
+        button_font,
+        color,
+        rect.center
+    )
 
 
 def draw_board():
