@@ -11,7 +11,7 @@ WINDOW_TITLE = "Tic-Tac-Toe"
 # Colors
 BLACK = (0, 0, 0)
 NEON_RED = (255, 23, 68)
-NEON_CITRUS = (223, 255, 0)
+NEON_BLUE = (0, 191, 255)
 GRID_COLOR = (35, 35, 45)
 WHITE = (255, 255, 255)
 BUTTON_BACKGROUND = (15, 15, 20)
@@ -228,7 +228,7 @@ def draw_symbols():
                 BOARD_Y + row * CELL_SIZE + CELL_SIZE / 2
             )
 
-            color = NEON_RED if symbol == "X" else NEON_CITRUS
+            color = NEON_RED if symbol == "X" else NEON_BLUE
 
             draw_neon_symbol(
                 symbol,
@@ -372,7 +372,7 @@ def draw_game():
     draw_button(
         o_button,
         "O",
-        NEON_CITRUS,
+        NEON_BLUE,
         selected_player == "O"
     )
 
