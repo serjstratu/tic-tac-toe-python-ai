@@ -32,10 +32,21 @@ status_font = pygame.font.Font(None, 28)
 
 selected_player = None
 
+board = [
+    [None, None, None],
+    [None, None, None],
+    [None, None, None]
+]
+
 x_button = pygame.Rect(190, 75, 90, 50)
 o_button = pygame.Rect(320, 75, 90, 50)
 
-
+board_rect = pygame.Rect(
+    BOARD_X,
+    BOARD_Y,
+    BOARD_SIZE,
+    BOARD_SIZE
+)
 
 def draw_neon_text(surface, text, font, color, center):
     text_surface = font.render(text, True, color)
@@ -62,8 +73,6 @@ def draw_neon_text(surface, text, font, color, center):
         )
 
     surface.blit(text_surface, text_rect)
-
-
 
 def draw_button(rect, text, color, selected=False):
     pygame.draw.rect(
@@ -116,7 +125,6 @@ def draw_button(rect, text, color, selected=False):
         rect.center
     )
 
-
 def draw_board():
     for i in range(1, 3):
         x = round(BOARD_X + i * CELL_SIZE)
@@ -141,6 +149,114 @@ def draw_board():
         )
 
 
+def draw_neon_symbol(symbol, center, color):
+    glow_surface = pygame.Surface(
+        screen.get_size(),
+        pygame.SRCALPHA
+    )
+
+    center_x, center_y = center
+    margin = 38
+
+    if symbol == "X":
+        start_1 = (center_x - margin, center_y - margin)
+        end_1 = (center_x + margin, center_y + margin)
+
+        start_2 = (center_x + margin, center_y - margin)
+        end_2 = (center_x - margin, center_y + margin)
+
+        draw_shape = lambda target, width, draw_color: (
+            pygame.draw.line(target, draw_color, start_1, end_1, width),
+            pygame.draw.line(target, draw_color, start_2, end_2, width)
+        )
+
+    else:
+        radius = 38
+
+        draw_shape = lambda target, width, draw_color: (
+            pygame.draw.circle(
+                target,
+                draw_color,
+                center,
+                radius,
+                width
+            )
+        )
+
+    # Glow layers
+    for width, alpha in [(22, 20), (15, 40), (9, 80)]:
+        draw_shape(
+            glow_surface,
+            width,
+            (*color, alpha)
+        )
+
+    screen.blit(glow_surface, (0, 0))
+
+    # Bright symbol core
+    draw_shape(screen, 5, color)
+
+
+def draw_symbols():
+    for row in range(3):
+        for col in range(3):
+            symbol = board[row][col]
+
+            if symbol is None:
+                continue
+
+            center_x = round(
+                BOARD_X + col * CELL_SIZE + CELL_SIZE / 2
+            )
+
+            center_y = round(
+                BOARD_Y + row * CELL_SIZE + CELL_SIZE / 2
+            )
+
+            color = NEON_RED if symbol == "X" else NEON_CITRUS
+
+            draw_neon_symbol(
+                symbol,
+                (center_x, center_y),
+                color
+            )
+
+
+def check_winner():
+    for row in board:
+        if row[0] is not None and row[0] == row[1] == row[2]:
+            return row[0]
+
+    for col in range(3):
+        if (
+            board[0][col] is not None
+            and board[0][col] == board[1][col] == board[2][col]
+        ):
+            return board[0][col]
+
+    if (
+        board[0][0] is not None
+        and board[0][0] == board[1][1] == board[2][2]
+    ):
+        return board[0][0]
+
+    if (
+        board[0][2] is not None
+        and board[0][2] == board[1][1] == board[2][0]
+    ):
+        return board[0][2]
+
+    return None
+
+
+def is_draw():
+    return all(
+        cell is not None
+        for row in board
+        for cell in row
+    )
+
+
 def draw_game():
     screen.fill(BLACK)
 
@@ -163,8 +279,15 @@ def draw_game():
     )
 
     draw_board()
+    draw_symbols()
 
-    if selected_player:
+    winner = check_winner()
+
+    if winner:
+        status_text = f"{winner} WINS!"
+    elif is_draw():
+        status_text = "IT'S A DRAW!"
+    elif selected_player:
         status_text = f"You are playing as {selected_player}"
     else:
         status_text = "Select X or O to start"
@@ -183,12 +306,21 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if x_button.collidepoint(event.pos):
-                selected_player = "X"
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        if x_button.collidepoint(event.pos):
+            selected_player = "X"
 
-            elif o_button.collidepoint(event.pos):
-                selected_player = "O"
+        elif o_button.collidepoint(event.pos):
+            selected_player = "O"
+
+        elif (selected_player and not check_winner() and not is_draw() and board_rect.collidepoint(event.pos)):
+            mouse_x, mouse_y = event.pos
+
+            col = int((mouse_x - BOARD_X) // CELL_SIZE)
+            row = int((mouse_y - BOARD_Y) // CELL_SIZE)
+
+            if board[row][col] is None:
+                board[row][col] = selected_player
 
     draw_game()
 
