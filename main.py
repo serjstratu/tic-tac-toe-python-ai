@@ -1,5 +1,4 @@
 import pygame
-import random
 
 pygame.init()
 
@@ -21,6 +20,11 @@ BOARD_SIZE = 360
 BOARD_X = (WINDOW_WIDTH - BOARD_SIZE) // 2
 BOARD_Y = 200
 CELL_SIZE = BOARD_SIZE / 3
+
+AI_THINKING_DELAY = 400
+
+ai_thinking = False
+ai_thinking_started = 0
 
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption(WINDOW_TITLE)
@@ -313,37 +317,103 @@ def is_draw():
     )
 
 def reset_board():
-    global round_over, current_player
+    global round_over, current_player, ai_thinking
 
     for row in board:
         row[:] = [None, None, None]
 
     current_player = selected_player
     round_over = False
+    ai_thinking = False
 
 def switch_player():
     global current_player
 
     current_player = "O" if current_player == "X" else "X"
 
-def make_random_move():
+
+def minimax(ai_symbol, human_symbol, is_maximizing, depth=0):
+
+    winner = check_winner()
+
+    if winner == ai_symbol:
+        return 10 - depth
+
+    if winner == human_symbol:
+        return depth - 10
+
+    if is_draw():
+        return 0
+
+    best_score = float("-inf") if is_maximizing else float("inf")
+
+    for row in range(3):
+        for col in range(3):
+
+            if board[row][col] is None:
+
+                if is_maximizing:
+                    board[row][col] = ai_symbol
+
+                    score = minimax(
+                        ai_symbol,
+                        human_symbol,
+                        False,
+                        depth + 1
+                    )
+
+                    best_score = max(best_score, score)
+
+                else:
+                    board[row][col] = human_symbol
+
+                    score = minimax(
+                        ai_symbol,
+                        human_symbol,
+                        True,
+                        depth + 1
+                    )
+
+                    best_score = min(best_score, score)
+
+                board[row][col] = None
+
+    return best_score
+
+
+def make_ai_move():
     global round_over
 
-    available_cells = [
-        (row, col)
-        for row in range(3)
-        for col in range(3)
-        if board[row][col] is None
-    ]
+    ai_symbol = "O" if selected_player == "X" else "X"
+    human_symbol = selected_player
 
-    if not available_cells:
+    best_score = float("-inf")
+    best_move = None
+
+    for row in range(3):
+        for col in range(3):
+
+            if board[row][col] is None:
+
+                board[row][col] = ai_symbol
+
+                score = minimax(
+                    ai_symbol,
+                    human_symbol,
+                    False
+                )
+
+                board[row][col] = None
+
+                if score > best_score:
+                    best_score = score
+                    best_move = (row, col)
+
+    if best_move is None:
         return
 
-    row, col = random.choice(available_cells)
-
-    computer_player = "O" if selected_player == "X" else "X"
-
-    board[row][col] = computer_player
+    row, col = best_move
+    board[row][col] = ai_symbol
 
     winner = check_winner()
 
@@ -386,10 +456,20 @@ def draw_game():
 
     if winner:
         status_text = f"{winner} WINS!"
+
     elif is_draw():
         status_text = "IT'S A DRAW!"
+
+    elif ai_thinking:
+        dots = "." * (
+                (pygame.time.get_ticks() // 300) % 4
+        )
+
+        status_text = f"AI IS THINKING{dots}"
+
     elif current_player:
         status_text = f"{current_player}'s TURN"
+
     else:
         status_text = "Select X or O to start"
 
@@ -400,10 +480,14 @@ def draw_game():
     screen.blit(status, status_rect)
     pygame.display.flip()
 
+
 running = True
+
+clock = pygame.time.Clock()
 
 while running:
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             running = False
 
@@ -417,18 +501,22 @@ while running:
                     selected_player = "X"
                     current_player = "X"
                     round_over = False
+                    ai_thinking = False
 
             elif o_button.collidepoint(event.pos):
                 if not any(any(cell is not None for cell in row) for row in board):
                     selected_player = "O"
                     current_player = "O"
                     round_over = False
+                    ai_thinking = False
 
             elif (
-                    selected_player
-                    and not round_over
-                    and board_rect.collidepoint(event.pos)
+                selected_player
+                and not round_over
+                and not ai_thinking
+                and board_rect.collidepoint(event.pos)
             ):
+
                 mouse_x, mouse_y = event.pos
 
                 col = int((mouse_x - BOARD_X) // CELL_SIZE)
@@ -449,8 +537,18 @@ while running:
                         round_over = True
 
                     else:
-                        make_random_move()
+                        ai_thinking = True
+                        ai_thinking_started = pygame.time.get_ticks()
+
+    if ai_thinking:
+        current_time = pygame.time.get_ticks()
+
+        if current_time - ai_thinking_started >= AI_THINKING_DELAY:
+            ai_thinking = False
+            make_ai_move()
 
     draw_game()
+
+    clock.tick(60)
 
 pygame.quit()
