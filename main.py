@@ -1,33 +1,15 @@
 import pygame
+import settings
 
 pygame.init()
 
-# Window settings
-WINDOW_WIDTH = 600
-WINDOW_HEIGHT = 600
-WINDOW_TITLE = "Tic-Tac-Toe"
+screen = pygame.display.set_mode(
+    (settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT)
+)
 
-# Colors
-BLACK = (0, 0, 0)
-NEON_RED = (255, 23, 68)
-NEON_BLUE = (0, 191, 255)
-GRID_COLOR = (35, 35, 45)
-WHITE = (255, 255, 255)
-BUTTON_BACKGROUND = (15, 15, 20)
+pygame.display.set_caption(settings.WINDOW_TITLE)
 
-# Board settings
-BOARD_SIZE = 360
-BOARD_X = (WINDOW_WIDTH - BOARD_SIZE) // 2
-BOARD_Y = 200
-CELL_SIZE = BOARD_SIZE / 3
-
-AI_THINKING_DELAY = 400
-
-ai_thinking = False
-ai_thinking_started = 0
-
-screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption(WINDOW_TITLE)
+clock = pygame.time.Clock()
 
 # Fonts
 title_font = pygame.font.Font(None, 38)
@@ -35,6 +17,9 @@ button_font = pygame.font.Font(None, 42)
 status_font = pygame.font.Font(None, 28)
 restart_font = pygame.font.Font(None, 24)
 score_font = pygame.font.Font(None, 24)
+
+ai_thinking = False
+ai_thinking_started = 0
 
 selected_player = None
 current_player = None
@@ -55,14 +40,13 @@ round_over = False
 
 x_button = pygame.Rect(190, 75, 90, 50)
 o_button = pygame.Rect(320, 75, 90, 50)
-
 restart_button = pygame.Rect(235, 135, 130, 30)
 
 board_rect = pygame.Rect(
-    BOARD_X,
-    BOARD_Y,
-    BOARD_SIZE,
-    BOARD_SIZE
+    settings.BOARD_X,
+    settings.BOARD_Y,
+    settings.BOARD_SIZE,
+    settings.BOARD_SIZE
 )
 
 def draw_neon_text(surface, text, font, color, center):
@@ -95,7 +79,7 @@ def draw_neon_text(surface, text, font, color, center):
 def draw_button(rect, text, color, selected=False):
     pygame.draw.rect(
         screen,
-        BUTTON_BACKGROUND,
+        settings.BUTTON_BACKGROUND,
         rect,
         border_radius=8
     )
@@ -125,7 +109,7 @@ def draw_button(rect, text, color, selected=False):
             (rect.x - 12, rect.y - 12)
         )
 
-    border_color = color if selected else GRID_COLOR
+    border_color = color if selected else settings.GRID_COLOR
 
     pygame.draw.rect(
         screen,
@@ -146,24 +130,24 @@ def draw_button(rect, text, color, selected=False):
 
 def draw_board():
     for i in range(1, 3):
-        x = round(BOARD_X + i * CELL_SIZE)
+        x = round(settings.BOARD_X + i * settings.CELL_SIZE)
 
         pygame.draw.line(
             screen,
-            GRID_COLOR,
-            (x, BOARD_Y),
-            (x, BOARD_Y + BOARD_SIZE),
+            settings.GRID_COLOR,
+            (x, settings.BOARD_Y),
+            (x, settings.BOARD_Y + settings.BOARD_SIZE),
             2
         )
 
     for i in range(1, 3):
-        y = round(BOARD_Y + i * CELL_SIZE)
+        y = round(settings.BOARD_Y + i * settings.CELL_SIZE)
 
         pygame.draw.line(
             screen,
-            GRID_COLOR,
-            (BOARD_X, y),
-            (BOARD_X + BOARD_SIZE, y),
+            settings.GRID_COLOR,
+            (settings.BOARD_X, y),
+            (settings.BOARD_X + settings.BOARD_SIZE, y),
             2
         )
 
@@ -225,14 +209,14 @@ def draw_symbols():
                 continue
 
             center_x = round(
-                BOARD_X + col * CELL_SIZE + CELL_SIZE / 2
+                settings.BOARD_X + col * settings.CELL_SIZE + settings.CELL_SIZE / 2
             )
 
             center_y = round(
-                BOARD_Y + row * CELL_SIZE + CELL_SIZE / 2
+                settings.BOARD_Y + row * settings.CELL_SIZE + settings.CELL_SIZE / 2
             )
 
-            color = NEON_RED if symbol == "X" else NEON_BLUE
+            color = settings.NEON_RED if symbol == "X" else settings.NEON_BLUE
 
             draw_neon_symbol(
                 symbol,
@@ -244,20 +228,20 @@ def draw_symbols():
 def draw_restart_button():
     pygame.draw.rect(
         screen,
-        BUTTON_BACKGROUND,
+        settings.BUTTON_BACKGROUND,
         restart_button,
         border_radius=8
     )
 
     pygame.draw.rect(
         screen,
-        GRID_COLOR,
+        settings.GRID_COLOR,
         restart_button,
         width=2,
         border_radius=8
     )
 
-    text = restart_font.render("RESTART", True, WHITE)
+    text = restart_font.render("RESTART", True, settings.WHITE)
     text_rect = text.get_rect(center=restart_button.center)
 
     screen.blit(text, text_rect)
@@ -273,11 +257,11 @@ def draw_scoreboard():
     text_surface = score_font.render(
         score_text,
         True,
-        WHITE
+        settings.WHITE
     )
 
     text_rect = text_surface.get_rect(
-        center=(WINDOW_WIDTH // 2, 180)
+        center=(settings.WINDOW_WIDTH // 2, 180)
     )
 
     screen.blit(text_surface, text_rect)
@@ -426,23 +410,23 @@ def make_ai_move():
         round_over = True
 
 def draw_game():
-    screen.fill(BLACK)
+    screen.fill(settings.BLACK)
 
-    title = title_font.render("CHOOSE YOUR SIDE", True, WHITE)
-    title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 35))
+    title = title_font.render("CHOOSE YOUR SIDE", True, settings.WHITE)
+    title_rect = title.get_rect(center=(settings.WINDOW_WIDTH // 2, 35))
     screen.blit(title, title_rect)
 
     draw_button(
         x_button,
         "X",
-        NEON_RED,
+        settings.NEON_RED,
         selected_player == "X"
     )
 
     draw_button(
         o_button,
         "O",
-        NEON_BLUE,
+        settings.NEON_BLUE,
         selected_player == "O"
     )
 
@@ -473,9 +457,9 @@ def draw_game():
     else:
         status_text = "Select X or O to start"
 
-    status = status_font.render(status_text, True, WHITE)
+    status = status_font.render(status_text, True, settings.WHITE)
     status_rect = status.get_rect(
-        center=(WINDOW_WIDTH // 2, 580)
+        center=(settings.WINDOW_WIDTH // 2, 580)
     )
     screen.blit(status, status_rect)
     pygame.display.flip()
@@ -519,8 +503,8 @@ while running:
 
                 mouse_x, mouse_y = event.pos
 
-                col = int((mouse_x - BOARD_X) // CELL_SIZE)
-                row = int((mouse_y - BOARD_Y) // CELL_SIZE)
+                col = int((mouse_x - settings.BOARD_X) // settings.CELL_SIZE)
+                row = int((mouse_y - settings.BOARD_Y) // settings.CELL_SIZE)
 
                 if board[row][col] is None:
 
@@ -543,7 +527,7 @@ while running:
     if ai_thinking:
         current_time = pygame.time.get_ticks()
 
-        if current_time - ai_thinking_started >= AI_THINKING_DELAY:
+        if current_time - ai_thinking_started >= settings.AI_THINKING_DELAY:
             ai_thinking = False
             make_ai_move()
 
