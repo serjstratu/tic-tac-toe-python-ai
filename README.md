@@ -169,3 +169,15 @@ This project was developed as a hands-on Python learning project, focusing on:
 ---
 
 **Built with Python, Pygame and a bit of AI.**
+
+# Tic-Tac-Toe with AI
+
+[![Download](https://img.shields.io/github/v/release/serjstratu/tic-tac-toe-python-ai)](https://github.com/serjstratu/tic-tac-toe-python-ai/releases/latest)
+
+## Download
+
+Download the latest standalone macOS application:
+
+**[Download TicTacToe for macOS](https://github.com/serjstratu/tic-tac-toe-python-ai/releases/latest)**
+
+No Python installation required.
