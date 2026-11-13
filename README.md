@@ -1,25 +1,44 @@
-# Tic-Tac-Toe
+# Tic-Tac-Toe with AI
 
-A classic Tic-Tac-Toe game built with Python and Pygame.
+A classic Tic-Tac-Toe game built with Python and Pygame, featuring an AI opponent powered by the Minimax algorithm.
 
-The project started as a way to practice Python fundamentals, game development, code organization, and automated testing.
+**[View on GitHub](https://github.com/serjstratu/tic-tac-toe-python-ai)**
+
+![Python](https://img.shields.io/badge/Python-3.13-blue)
+![Pygame](https://img.shields.io/badge/Pygame-2.6.1-green)
+![Tests](https://img.shields.io/badge/Tests-55%20passed-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-95%25-brightgreen)
 
 ## Features
 
-- Interactive Tic-Tac-Toe game with a graphical interface
-- Player turns (X and O)
-- AI opponent
+- Interactive graphical interface built with Pygame
+- Play as X or O
+- AI opponent powered by the Minimax algorithm
+- Optimal AI decision-making
 - Win and draw detection
-- Game restart functionality
-- Separated game logic and UI
-- Automated unit tests with pytest
+- Automatic score tracking
+- Restart functionality
+- Neon-inspired visual design
+- AI thinking delay for a more natural gameplay experience
+
+## AI Algorithm
+
+The AI uses the **Minimax algorithm** to evaluate possible game states and select the optimal move.
+
+The algorithm:
+- Explores possible future moves recursively
+- Maximizes the AI's score
+- Minimizes the human player's score
+- Prioritizes faster wins and delays inevitable losses
+
+The result is an AI opponent that plays optimally and cannot be beaten in a correctly played game.
 
 ## Tech Stack
 
-- **Python 3.13**
-- **Pygame** — game interface and rendering
-- **pytest** — automated testing
-- **pytest-cov** — test coverage reporting
+- Python 3.13
+- Pygame 2.6.1
+- pytest
+- pytest-cov
 
 ## Project Structure
 
@@ -31,8 +50,13 @@ tic-tac-toe/
 ├── main.py
 ├── settings.py
 ├── tests/
-│   └── test_game_logic.py
+│   ├── test_ai.py
+│   ├── test_game_logic.py
+│   ├── test_game_ui.py
+│   └── test_main.py
+├── pyproject.toml
 ├── pytest.ini
+├── uv.lock
 └── README.md
 ```
 
@@ -48,8 +72,8 @@ tic-tac-toe/
 Clone the repository:
 
 ```bash
-git clone <repository-url>
-cd tic-tac-toe
+git clone https://github.com/serjstratu/tic-tac-toe-python-ai.git
+cd tic-tac-toe-python-ai
 ```
 
 Create and activate a virtual environment:
@@ -82,31 +106,66 @@ python -m pytest -v
 Run tests with coverage:
 
 ```bash
-python -m pytest --cov=game_logic --cov-report=term-missing
+python -m pytest --cov=. --cov-branch --cov-report=term-missing
+```
+
+### Test Results
+
+- **55 tests passed**
+- **95% total code coverage**
+- 526 statements analyzed
+- 104 branches analyzed
+
+Coverage includes game logic, AI decision-making, UI rendering, and application behavior.
+
+## Building an Executable
+
+The project can be packaged into a standalone macOS application using PyInstaller.
+
+Install PyInstaller:
+
+```bash
+pip install pyinstaller
+```
+
+Build the application:
+
+```bash
+pyinstaller --noconfirm --clean --windowed --name "TicTacToe" main.py
+```
+
+The resulting application will be available in:
+
+```text
+dist/TicTacToe.app
 ```
 
 ## Architecture
 
-The project separates responsibilities into independent modules:
+The project follows a modular structure with separated responsibilities:
 
-- **main.py** — application entry point and game loop
-- **game_logic.py** — core game rules, winner detection, draw detection, and player switching
-- **game_ui.py** — rendering and user interface
-- **ai.py** — AI opponent logic
-- **settings.py** — game configuration, dimensions, colors, and fonts
-- **tests/** — automated tests for game logic
+| Module | Responsibility |
+|---|---|
+| `main.py` | Application entry point and game controller |
+| `game_logic.py` | Core game rules and state validation |
+| `ai.py` | Minimax algorithm and AI decision-making |
+| `game_ui.py` | Graphical interface and rendering |
+| `settings.py` | Game configuration and visual constants |
+| `tests/` | Automated tests |
 
 ## Learning Goals
 
-This project explores:
+This project was developed as a hands-on Python learning project, focusing on:
 
-- Python functions, modules, and imports
+- Python fundamentals and OOP
+- Modular application architecture
 - Separation of concerns
+- Recursive algorithms and Minimax
 - Game state management
-- Basic AI decision-making
-- Unit testing with pytest
-- Test coverage and code quality
+- Automated testing with pytest
+- Code coverage and quality assurance
+- Packaging Python applications
 
 ---
 
-*Built as a hands-on Python learning project.*
+**Built with Python, Pygame and a bit of AI.**
