@@ -176,8 +176,11 @@ This project was developed as a hands-on Python learning project, focusing on:
 
 ## Download
 
-Download the latest standalone macOS application:
+Download the latest standalone application for your platform:
 
-**[Download TicTacToe for macOS](https://github.com/serjstratu/tic-tac-toe-python-ai/releases/latest)**
+- **macOS (Apple Silicon):** [Download TicTacToe for macOS](https://github.com/serjstratu/tic-tac-toe-python-ai/releases/latest)
+- **Windows (x64):** [Download TicTacToe for Windows](https://github.com/serjstratu/tic-tac-toe-python-ai/releases/latest)
+
+Both downloads are available on the [Latest GitHub Release](https://github.com/serjstratu/tic-tac-toe-python-ai/releases/latest) page.
 
 No Python installation required.
